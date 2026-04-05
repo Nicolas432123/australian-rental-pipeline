@@ -1,0 +1,36 @@
+services:
+  kestra:
+    image: kestra/kestra:latest
+    container_name: kestra
+    user: "root"
+    command: server standalone --flow-path=/flows
+    ports:
+      - "8080:8080"
+    environment:
+      KESTRA_CONFIGURATION: |
+        kestra:
+          server:
+            basicAuth:
+              enabled: false
+          repository:
+            type: h2
+          queue:
+            type: h2
+          storage:
+            type: local
+            local:
+              basePath: /app/storage
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./kestra/flows:/flows
+      - ./kestra/storage:/app/storage
+      - ./:/app/project
+      - ./credentials:/app/credentials:ro
+      - ./data:/app/data
+
+  rentals-spark:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.spark
+    image: rentals-spark
+    profiles: ["build-only"]

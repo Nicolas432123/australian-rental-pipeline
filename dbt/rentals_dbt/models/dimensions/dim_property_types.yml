@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: dim_property_types
+    description: "Dimension table for unique property types"
+    columns:
+      - name: property_type_id
+        description: "Surrogate key for property type dimension"
+        tests:
+          - not_null
+          - unique
+
+      - name: property_type
+        description: "Normalized property type"
+        tests:
+          - not_null
+          - unique

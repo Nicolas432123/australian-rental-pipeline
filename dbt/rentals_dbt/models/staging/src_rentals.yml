@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: rentals_raw
+    database: project-data-talk-club
+    schema: australian_rentals
+    tables:
+      - name: rentals_clean
+        description: "Cleaned rentals dataset loaded from Spark parquet pipeline"

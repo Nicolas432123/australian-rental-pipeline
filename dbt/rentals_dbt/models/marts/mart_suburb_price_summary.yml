@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: mart_suburb_price_summary
+    description: "Analytical mart with rental price statistics per suburb"
+    columns:
+      - name: suburb
+        tests:
+          - not_null
+
+      - name: state
+        tests:
+          - not_null
+
+      - name: total_listings
+
+      - name: avg_price
+
+      - name: min_price
+
+      - name: max_price

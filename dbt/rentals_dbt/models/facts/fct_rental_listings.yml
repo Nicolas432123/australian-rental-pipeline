@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fct_rental_listings
+    description: "Fact table for rental listings with dimension keys"
+    columns:
+      - name: listing_id
+        description: "Unique listing identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: suburb_id
+        description: "Foreign key to dim_suburbs"
+        tests:
+          - not_null
+
+      - name: property_type_id
+        description: "Foreign key to dim_property_types"
+        tests:
+          - not_null
+
+      - name: price_aud
+        description: "Rental price in AUD"
+        tests:
+          - not_null
+
+      - name: bedrooms
+        description: "Number of bedrooms"
+
+      - name: bathrooms
+        description: "Number of bathrooms"
+
+      - name: parking_spaces
+        description: "Number of parking spaces"

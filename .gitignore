@@ -19,3 +19,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Terraform providers
+terraform/.terraform/
+terraform/.terraform.lock.hclY

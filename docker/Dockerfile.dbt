@@ -1,0 +1,4 @@
+FROM ghcr.io/dbt-labs/dbt-bigquery:1.7.9
+COPY ./dbt/rentals_dbt /app/dbt/rentals_dbt
+COPY ./credentials/gcp-rentals-sa.json /app/credentials/gcp-rentals-sa.json
+WORKDIR /app/dbt/rentals_dbt

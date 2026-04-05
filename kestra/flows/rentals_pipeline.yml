@@ -1,0 +1,121 @@
+id: australian_rental_pipeline
+namespace: australian.rentals
+
+tasks:
+  - id: spark_cleaning
+    type: io.kestra.plugin.docker.Run
+    containerImage: rentals-spark
+    pullPolicy: NEVER
+    volumes:
+      - /app/credentials:/app/credentials:ro
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - python
+      - /app/spark_jobs/clean_rentals.py
+      - --input
+      - gs://project-data-talk-club-data-lake/raw/australian_rental_market_2026.csv
+      - --output
+      - gs://project-data-talk-club-data-lake/processed/rentals_clean.parquet
+
+  - id: validate_schema
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-spark
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      volumes:
+        - /app/credentials:/app/credentials:ro
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - python /app/analysis/validate_schema.py --input gs://project-data-talk-club-data-lake/processed/rentals_clean.parquet
+
+  - id: validate_business_rules
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-spark
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      volumes:
+        - /app/credentials:/app/credentials:ro
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - python /app/analysis/validate_business_rules.py --input gs://project-data-talk-club-data-lake/processed/rentals_clean.parquet
+
+  - id: validate_volume
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-spark
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      volumes:
+        - /app/credentials:/app/credentials:ro
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - python /app/analysis/validate_volume.py --raw gs://project-data-talk-club-data-lake/raw/australian_rental_market_2026.csv --clean gs://project-data-talk-club-data-lake/processed/rentals_clean.parquet
+
+  - id: load_bigquery
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-spark
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      volumes:
+        - /app/credentials:/app/credentials:ro
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - python /app/loaders/load_rentals_to_bigquery.py --input gs://project-data-talk-club-data-lake/processed/rentals_clean.parquet --project project-data-talk-club --dataset australian_rentals --table rentals_clean
+
+  - id: dbt_run
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-dbt
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - mkdir -p /root/.dbt
+      - |
+        cat > /root/.dbt/profiles.yml <<'EOF'
+        rentals_dbt:
+          target: dev
+          outputs:
+            dev:
+              type: bigquery
+              method: service-account
+              project: project-data-talk-club
+              dataset: australian_rentals
+              threads: 1
+              keyfile: /app/credentials/gcp-rentals-sa.json
+              location: australia-southeast1
+              priority: interactive
+        EOF
+      - cd /app/dbt/rentals_dbt && dbt deps && dbt run
+
+  - id: dbt_test
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: rentals-dbt
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-rentals-sa.json
+    commands:
+      - mkdir -p /root/.dbt
+      - |
+        cat > /root/.dbt/profiles.yml <<'EOF'
+        rentals_dbt:
+          target: dev
+          outputs:
+            dev:
+              type: bigquery
+              method: service-account
+              project: project-data-talk-club
+              dataset: australian_rentals
+              threads: 1
+              keyfile: /app/credentials/gcp-rentals-sa.json
+              location: australia-southeast1
+              priority: interactive
+        EOF
+      - cd /app/dbt/rentals_dbt && dbt deps && dbt test

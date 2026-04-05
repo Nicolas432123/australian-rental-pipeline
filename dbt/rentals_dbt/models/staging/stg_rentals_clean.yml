@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_rentals_clean
+    description: "Staging model for cleaned rental listings"
+    columns:
+
+      - name: listing_id
+        description: "Unique listing identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: price_aud
+        description: "Rental price in AUD"
+        tests:
+          - not_null
+
+      - name: suburb
+        description: "Suburb name"
+        tests:
+          - not_null
+
+      - name: state
+        description: "Australian state"
+
+      - name: property_type
+        description: "Normalized property type"

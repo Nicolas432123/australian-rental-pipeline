@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: dim_suburbs
+    description: "Dimension table for unique suburbs and states"
+    columns:
+      - name: suburb_id
+        description: "Surrogate key for suburb dimension"
+        tests:
+          - not_null
+          - unique
+
+      - name: suburb
+        description: "Suburb name"
+        tests:
+          - not_null
+
+      - name: state
+        description: "Australian state"
+        tests:
+          - not_null
