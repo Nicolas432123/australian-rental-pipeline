@@ -2,6 +2,11 @@
 
 An end-to-end data engineering pipeline for the Australian rental market, built with modern open-source tools and deployed on Google Cloud Platform.
 
+
+🔍 Problem Statement
+Australia is experiencing one of its most severe rental crises in recent history. Renters, investors, researchers and policymakers all need reliable, structured data to understand market dynamics — but rental listing data is scattered, inconsistent and difficult to analyse at scale.
+Raw rental data comes with multiple issues: inconsistent property type naming, missing prices, invalid coordinates, duplicate listings and no standard structure across sources. Without a proper data pipeline, answering basic questions like "What is the average weekly rent in Queensland?" or "Which suburbs have the highest rental prices?" requires manual effort and produces
+
 ---
 
 ## 📐 Architecture
